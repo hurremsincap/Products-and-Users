@@ -1,0 +1,159 @@
+﻿@model KafeinCase.Entities.Concrete.Users
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width" />
+    <title>Products and Users</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+    <!-- style dosyasını implemente ettik -->
+    <link type="text/css" href="~/Content/style.css" rel="stylesheet" />
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <div>
+    </div>
+
+    <div class="container py-5">
+        <!-- Ürünler ve Kullanıcılar-->
+        <header class="text-center mb-5">
+            <h1 class="display-4 font-weight-bold">Products and Users</h1>
+        </header>
+
+        <!-- Dinamik olarak databaseden getirilen kullanıcıların gösterilmesi-->
+        <h2 class="font-weight-bold mb-2">Users</h2>
+        <div class="row pb-5 mb-4 addusers">
+            @foreach (var item in ViewBag.Users)
+            {
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <!-- Card-->
+                    <div class="card shadow-sm border-0 rounded">
+                        <div class="card-body p-0">
+                            <img src="~/@item.UsersImageUrl" alt="" class="w-100 card-img-top">
+                            <div class="p-4" id="@item.UserId">
+                                <h5 class="mb-0">@item.Name @item.Surname</h5>
+                                @*<p class="small text-muted">CEO - Consultant</p>*@
+                                <ul class="social mb-0 list-inline mt-3">
+                                    <li>
+                                        <label>
+                                            <input type="radio" name="userradio" id="users" value=""><img id="radio">
+                                        </label>
+                                    </li>
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            }
+        </div>
+
+
+        <!--Dinamik olarak databaseden getirilen ürünlerin gösterilmesi-->
+        <h2 class="font-weight-bold mb-2">Products</h2>
+        <div class="row pb-5 mb-4 addproduct">
+            @foreach (var item in ViewBag.Products)
+            {
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <!-- Card-->
+                    <div class="card rounded shadow-sm border-0">
+                        <div class="card-body p-4" id="@item.ProductId">
+                            <img src="~/@item.ProductImageUrl" alt="" class="img-fluid d-block mx-auto mb-3">
+                            <h5> <a href="#" class="text-dark">@item.Name</a></h5>
+                            <h6 class="" id="usersname">@item.Description</h6>
+                            <h7 class="" id="usersname">@item.Price TL</h7>
+                            <ul class="list-inline small">
+                                <li>
+                                    <label>
+                                        <input type="radio" class="radio-option" value="" id="productradio"><img id="radio">
+                                    </label>
+                                </li>
+
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+
+        <div class="row pb-5">
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+
+                <button type="button" class="btn btn-success" id="savebutton">Kaydet</button>
+            </div>
+        </div>
+
+
+    </div>
+</body>
+</html>
+
+<script>
+    $(document).ready(function () {
+        //product radio buttonunlarının multiselect çalışması
+        $('.radio-option').click(function () {
+            $(this).not(this).removeClass('click');
+            $(this).toggleClass("click");
+        });
+
+
+        //kaydet butonunun tetiklenmesi
+        $("#savebutton").click(function () {
+         
+            //seçilen userid
+            var chechkeduser = $("input[id=users]:checked").parent().parent().parent().parent()[0].id;
+            console.log(chechkeduser);
+            var userid = {
+                UserId: chechkeduser,
+            }
+
+
+            //seçilen ürünler
+            var checkedproducts = $("input[id=productradio].click").parent().parent().parent().parent();
+            console.log($("input[id=productradio].click").parent().parent().parent().parent());
+
+
+            //seçilen ürünlerin products modelinde productid ye atanaması
+            var productid = [];
+            for (var i = 0; i < checkedproducts.length; i++) {               
+                productid.push({
+                    ProductId:checkedproducts[i].id,
+                });
+            }
+            console.log(productid);
+
+            //seçilen kullanıcı ve ürünlerin ilgili controllara model olarak parametre ile gönderilemesi
+            $.ajax({
+                url: "@Url.Action("AddUserProduct", "Home")",
+                method: "post",
+                data: { userid: userid, productid: productid },
+                success: function (veri) {
+                    if (veri == true) {
+                        alert("İşlem Tamamlandı");
+                        location.reload();
+                    }
+                    else {
+                        alert("Tekrar deneyiniz!");
+                    }
+                }
+            });
+        });
+
+    });
+
+</script>
